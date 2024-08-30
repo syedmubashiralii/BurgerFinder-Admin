@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>130725020117-li166bh3svqd0g8fnsmtviv6u8dh3mu1.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.130725020117-li166bh3svqd0g8fnsmtviv6u8dh3mu1</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>130725020117-hdjh0ngcqi009ga03l2mvu5ldgnoaet3.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCmZ-sQ_orSOKMA6dreB0b4HVkUb76yE38</string>
+	<key>GCM_SENDER_ID</key>
+	<string>130725020117</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.restaurantUserAdmin</string>
+	<key>PROJECT_ID</key>
+	<string>ordrz-app</string>
+	<key>STORAGE_BUCKET</key>
+	<string>ordrz-app.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:130725020117:ios:15b048db420efd4c79fd5c</string>
+	<key>DATABASE_URL</key>
+	<string>https://ordrz-app-default-rtdb.firebaseio.com</string>
+</dict>
+</plist>
