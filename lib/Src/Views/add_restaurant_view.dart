@@ -61,34 +61,68 @@ class AddRestaurantView extends GetView<HomeController> {
                 },
               ),
               const SizedBox(height: 20),
-              Obx(() => controller.imagePath.value.isEmpty
-                  ? InkWell(
-                      onTap: controller.requestPermissions,
-                      child: Container(
-                        height: 100,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Colors.white)),
-                        alignment: Alignment.center,
-                        child: const Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.add,
-                                color: Colors.white,
-                              ),
-                              Text(
-                                "Add Restaurnat Image",
-                                style: TextStyle(color: Colors.white),
-                              )
-                            ],
+              Obx(() {
+                // Check if the list of image paths is empty
+                return controller.imagePaths.isEmpty
+                    ? InkWell(
+                        onTap: controller.requestPermissions,
+                        child: Container(
+                          height: 100,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                              border: Border.all(color: Colors.white)),
+                          alignment: Alignment.center,
+                          child: const Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                ),
+                                Text(
+                                  "Add Restaurant Images",
+                                  style: TextStyle(color: Colors.white),
+                                )
+                              ],
+                            ),
                           ),
                         ),
+                      )
+                    : Container(
+                      decoration: BoxDecoration(
+                          border: Border.all(color: Colors.white)),
+                      height: 200,
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: controller.imagePaths.length,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: Image.file(
+                                    File(controller.imagePaths[index]),
+                                    height: 150,
+                                    width: 150,
+                                    fit: BoxFit.cover,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          ElevatedButton(
+                            onPressed: controller.requestPermissions,
+                            child: const Text(
+                              'Add Picture',
+                              style: TextStyle(color: Colors.teal),
+                            ),
+                          ),
+                        ],
                       ),
-                    )
-                  : Image.file(File(controller.imagePath.value),
-                      height: 150, width: 150, fit: BoxFit.cover)),
+                    );
+              }),
               const SizedBox(
                 height: 20,
               ),
@@ -124,9 +158,11 @@ class AddRestaurantView extends GetView<HomeController> {
                     locationController.text,
                     ratingsController.text,
                   );
-                  
                 },
-                child: const Text('Add Restaurant',style: TextStyle(color: Colors.teal),),
+                child: const Text(
+                  'Add Restaurant',
+                  style: TextStyle(color: Colors.teal),
+                ),
               ),
             ],
           ),

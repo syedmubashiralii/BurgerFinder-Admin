@@ -1,19 +1,18 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_state_manager/get_state_manager.dart';
-import 'package:restaurant_user_admin/Src/Models/restaurant_model.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:device_info_plus/device_info_plus.dart';
+import 'package:restaurant_user_admin/Src/Models/restaurant_model.dart';
 
 class HomeController extends GetxController {
-  RxList restaurants = <Restaurant>[].obs;
-  var imagePath = ''.obs;
-  var imageUrl = ''.obs;
+  RxList<Restaurant> restaurants = <Restaurant>[].obs;
+  RxList<String> imagePaths = <String>[].obs; // List to store multiple image paths
+  RxList<String> imageUrls = <String>[].obs; // List to store multiple image URLs
   var restaurantKey = GlobalKey<FormState>();
 
   @override
@@ -22,7 +21,7 @@ class HomeController extends GetxController {
     super.onInit();
   }
 
-   fetchRestaurants() async {
+  fetchRestaurants() async {
     try {
       final snapshot =
           await FirebaseFirestore.instance.collection('Restaurants').get();
@@ -33,15 +32,24 @@ class HomeController extends GetxController {
     }
   }
 
- void addRestaurant(
-    String name, String description, String location, String ratings) async {
+  void addRestaurant(
+  String name, String description, String location, String ratings) async {
   try {
     if (restaurantKey.currentState?.validate() ?? false) {
-      if (imagePath.isEmpty) {
-        Get.snackbar("Error", "Image is required");
+      if (imagePaths.isEmpty) {
+        Get.snackbar("Error", "At least one image is required");
         return;
       }
-      await uploadImage();
+
+      // Show loading dialog
+      Get.dialog(
+        Center(
+          child: CircularProgressIndicator(color: Colors.white,),
+        ),
+        barrierDismissible: false, // Prevents dialog from being dismissed by tapping outside
+      );
+
+      await uploadImages(); // Upload all images
 
       // Create a new document reference in Firestore
       DocumentReference docRef =
@@ -55,36 +63,39 @@ class HomeController extends GetxController {
         'id': restaurantId, // Include the generated document ID
         'name': name,
         'description': description,
-        'image': imageUrl.value,
+        'images': imageUrls, // Store all image URLs
         'location': location,
         'ratings': ratings,
         'review': [], // Start with empty reviews
       });
 
-      Get.back();
+      // Close loading dialog
+      Get.back(); // Closes the loading dialog
+
+      Get.back(); // Navigates back to the previous screen
       fetchRestaurants(); // Refresh the list after adding
     }
   } catch (e) {
+    // Close loading dialog in case of an error
+    if (Get.isDialogOpen == true) {
+      Get.back(); // Closes the loading dialog if it's still open
+    }
     print('Error adding restaurant: $e');
   }
 }
 
-
   Future<void> verifyReview(Restaurant restaurant, int reviewIndex) async {
     try {
-      // Reference to the restaurant document in Firebase
       final restaurantRef = FirebaseFirestore.instance
           .collection('Restaurants')
-          .doc(restaurant.id); // Assuming you have an ID field in Restaurant model
+          .doc(restaurant.id);
 
-      // Update the specific review's verified status to true
       restaurant.reviews[reviewIndex].verified = true;
 
       await restaurantRef.update({
         'review': restaurant.reviews.map((review) => review.toMap()).toList(),
       });
 
-      // Update the local state
       restaurants.refresh();
     } catch (e) {
       print('Error verifying review: $e');
@@ -97,14 +108,14 @@ class HomeController extends GetxController {
         await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      imagePath.value = pickedFile.path;
+      imagePaths.add(pickedFile.path); // Add each image path to the list
     }
   }
 
   Future<int?> getApiLevel() async {
     final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     final androidInfo = await deviceInfo.androidInfo;
-    return androidInfo.version.sdkInt; // API level of the Android device
+    return androidInfo.version.sdkInt;
   }
 
   Future<void> requestPermissions() async {
@@ -114,33 +125,32 @@ class HomeController extends GetxController {
         // Android 13+
         if (await Permission.photos.request().isGranted) {
           pickImage();
-          // Handle denied access
         }
       } else {
         // Android versions below 13
         if (await Permission.storage.request().isGranted) {
           pickImage();
-          // Handle denied access
         }
       }
     }
   }
 
-  Future<void> uploadImage() async {
+  Future<void> uploadImages() async {
     try {
-      // Upload image to Firebase Storage
-      String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-      Reference storageReference =
-          FirebaseStorage.instance.ref().child('restaurant_images/$fileName');
-      UploadTask uploadTask = storageReference.putFile(File(imagePath.value));
+      for (String path in imagePaths) {
+        String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+        Reference storageReference =
+            FirebaseStorage.instance.ref().child('restaurant_images/$fileName');
+        UploadTask uploadTask = storageReference.putFile(File(path));
 
-      TaskSnapshot taskSnapshot = await uploadTask;
-      String downloadUrl = await taskSnapshot.ref.getDownloadURL();
+        TaskSnapshot taskSnapshot = await uploadTask;
+        String downloadUrl = await taskSnapshot.ref.getDownloadURL();
 
-      imageUrl.value = downloadUrl; // Store image URL
-      print('Image uploaded: $downloadUrl');
+        imageUrls.add(downloadUrl); // Add each image URL to the list
+        print('Image uploaded: $downloadUrl');
+      }
     } catch (e) {
-      print('Error uploading image: $e');
+      print('Error uploading images: $e');
     }
   }
 }
