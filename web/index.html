@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+  <head>
+     <!-- Add the script here -->
+     <script type="text/javascript">
+      window.flutterWebRenderer = "html";
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyANrlwGlKEXJHLlCK0fJ5eXORbOQL5uI48"></script>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.9.4/firebase-app.js"></script>
+    <!-- Firebase Messaging SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.9.4/firebase-messaging.js"></script>
+    <script>
+      // Initialize Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyBbr5lbd1eVEnWDdrUgw5vm4_ZrTR172zk",
+        appId: "1:130725020117:web:62ea954247e38d8479fd5c",
+        messagingSenderId: "130725020117",
+        projectId: "ordrz-app",
+        authDomain: "ordrz-app.firebaseapp.com",
+        databaseURL: "https://ordrz-app-default-rtdb.firebaseio.com",
+        storageBucket: "ordrz-app.appspot.com",
+      };
+      firebase.initializeApp(firebaseConfig);
+
+      const messaging = firebase.messaging();
+
+
+      async function subscribeToTopic(topic, token,accessToken) {
+        try {
+          console.log('Enter  "' + "" + '"');
+          console.log('accessToken  "' + accessToken + '"');
+
+          // const token = await getToken();
+          if (token) {
+            await fetch(
+              `https://iid.googleapis.com/iid/v1/${token}/rel/topics/${topic}`,
+              {
+                method: "POST",
+                headers: new Headers({
+                  Authorization: `Bearer ${accessToken}`, // Use the OAuth 2.0 token
+                }),
+              }
+            );
+
+            console.log('Subscribed to "' + topic + '"');
+          }
+        } catch (error) {
+          console.error("Error subscribing to topic:", error);
+        }
+      }
+
+      async function unsubscribeFromTopic(topic, token,accessToken) {
+        try {
+          if (token) {
+            await fetch(`https://iid.googleapis.com/iid/v1:batchRemove`, {
+              method: "POST",
+              headers: new Headers({
+                Authorization: `Bearer ${accessToken}`, // Use the OAuth 2.0 token
+                "Content-Type": "application/json",
+              }),
+              body: JSON.stringify({
+                to: `/topics/${topic}`,
+                registration_tokens: [token],
+              }),
+            });
+
+            console.log('Unsubscribed from "' + topic + '"');
+          }
+        } catch (error) {
+          console.error("Error unsubscribing from topic:", error);
+        }
+      }
+    </script>
+
+    <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+    <base href="$FLUTTER_BASE_HREF" />
+
+    <meta charset="UTF-8" />
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
+    <meta name="description" content="A new Flutter project." />
+
+    <!-- iOS meta tags & icons -->
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+
+    <title>BurgerFinder Admin</title>
+    <link rel="manifest" href="manifest.json" />
+   
+    <script>
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.9.1/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.9.1/firebase-analytics.js";
+      import { getMessaging } from "https://www.gstatic.com/firebasejs/9.9.1/firebase-messagin.js";
+    </script>
+  </head>
+  <body>
+    <script src="flutter_bootstrap.js" async></script>
+  </body>
+</html>
