@@ -4,9 +4,11 @@ import 'package:restaurant_user_admin/Src/Controllers/notification_controller.da
 import 'package:restaurant_user_admin/Src/Dialogs/loading_dialog.dart';
 import 'package:restaurant_user_admin/Src/Models/promo_code_model.dart';
 import 'package:restaurant_user_admin/Src/Models/restaurant_model.dart';
+import 'package:restaurant_user_admin/Src/Models/user_model.dart';
 import 'package:restaurant_user_admin/Src/Utils/helper_functions.dart';
 
 class PromoCodeController extends GetxController {
+  var redeemedUsers = <UserModel>[].obs;
   var restaurants = <Restaurant>[].obs;
   var promoCodes = <PromoCode>[].obs;
   var validCodes = <PromoCode>[].obs;
@@ -38,6 +40,15 @@ class PromoCodeController extends GetxController {
     }
   }
 
+    Future<void> fetchRedeemedUsers(List<String> userIds) async {
+    var usersQuery = await FirebaseFirestore.instance
+        .collection('Users')
+        .where('uid', whereIn: userIds)
+        .get();
+
+    redeemedUsers.value = usersQuery.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+  }
+
   void filterPromoCodes() {
     final now = DateTime.now();
     validCodes.value = promoCodes
@@ -58,6 +69,7 @@ class PromoCodeController extends GetxController {
         'restaurantId': restaurantId,
         'expiryDate': Timestamp.fromDate(expiryDate),
         'isActive': true,
+        'users':[]
       });
 
       final restaurant = restaurants.firstWhere(
