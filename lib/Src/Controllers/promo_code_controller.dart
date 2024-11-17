@@ -69,6 +69,7 @@ class PromoCodeController extends GetxController {
         'restaurantId': restaurantId,
         'expiryDate': Timestamp.fromDate(expiryDate),
         'isActive': true,
+        'description': codeDescription,
         'users':[]
       });
 
