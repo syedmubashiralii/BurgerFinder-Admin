@@ -49,21 +49,14 @@ class LandingView extends StatelessWidget {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        // appBar: AppBar(
-        //   backgroundColor: Colors.transparent,
-        //   elevation: 0,
-        //   centerTitle: true,
-        //   title: const Text("BurgerFinder Admin Panel",
-        //       style: TextStyle(fontSize: 26)),
-        // ),
+    
         backgroundColor: AppColors.primaryColor,
         body: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Center(
             child: SizedBox(
-              width: kIsWeb ? screenWidth / 2 : screenWidth,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
+              width: Get.width>900 ? screenWidth / 2 : screenWidth,
+              child: ListView(
                 children: [
                   Image.asset("assets/icon-transparent-bg.png", height: 250),
                   const SizedBox(height: 100),
@@ -104,6 +97,7 @@ class LandingView extends StatelessWidget {
                           context, "Promo Codes", Icons.card_giftcard, '/promo-codes'),
                     ],
                   ),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),

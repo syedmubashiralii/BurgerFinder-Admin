@@ -30,7 +30,7 @@ class HomeController extends GetxController {
     fetchAllUsers();
     notificationService.subscribeToAdminTopic();
     notificationService.listenNotifications();
-    
+
     notificationService.getToken().then((v) {
       print("token ${v}");
     });
@@ -200,43 +200,47 @@ class HomeController extends GetxController {
     }
   }
 
+  Future<void> deleteReview(
+      BuildContext context, Restaurant restaurant, int reviewIndex) async {
+    try {
+      bool? shouldDelete = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Delete Review'),
+            content: Text('Are you sure you want to delete this review?'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text('Delete'),
+              ),
+            ],
+          );
+        },
+      );
 
-  Future<void> deleteReview(BuildContext context, Restaurant restaurant, int reviewIndex) async {
-  try {
-    bool? shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Delete Review'),
-          content: Text('Are you sure you want to delete this review?'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text('Delete'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (shouldDelete == true) {
-      final restaurantRef = FirebaseFirestore.instance.collection('Restaurants').doc(restaurant.id);
-      restaurant.reviews.removeAt(reviewIndex);
-      await restaurantRef.update({
-        'review': restaurant.reviews.map((review) => review.toMap()).toList(),
-      });
-      restaurants.refresh();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Review deleted successfully')));
+      if (shouldDelete == true) {
+        final restaurantRef = FirebaseFirestore.instance
+            .collection('Restaurants')
+            .doc(restaurant.id);
+        restaurant.reviews.removeAt(reviewIndex);
+        await restaurantRef.update({
+          'review': restaurant.reviews.map((review) => review.toMap()).toList(),
+        });
+        restaurants.refresh();
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Review deleted successfully')));
+      }
+    } catch (e) {
+      print('Error deleting review: $e');
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Failed to delete the review')));
     }
-  } catch (e) {
-    print('Error deleting review: $e');
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete the review')));
   }
-}
 
   Future<void> pickImage() async {
     final ImagePicker picker = ImagePicker();
@@ -329,43 +333,56 @@ class HomeController extends GetxController {
 
   Future<void> fetchAllUsers() async {
     try {
-      final querySnapshot = await FirebaseFirestore.instance.collection('Users').get();
-      users.value = querySnapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+      users.clear();
+      users.refresh();
+      final querySnapshot =
+          await FirebaseFirestore.instance.collection('Users').get();
+      users.value = querySnapshot.docs
+          .map((doc) => UserModel.fromMap(doc.data()))
+          .toList();
+      users.refresh();
     } catch (e) {
       Get.snackbar('Error', 'Failed to fetch users: $e');
     }
   }
 
-  Future<void> deleteUser(String userId) async {
-     Get.back();
+  Future<void> blockUser(String userId, bool? isBlocked) async {
+    Get.back();
     try {
-      Get.dialog(LoadingDialog(),barrierDismissible: false);
-      await FirebaseFirestore.instance.collection('Users').doc(userId).delete();
-      users.removeWhere((user) => user.uid == userId);
+      Get.dialog(LoadingDialog(), barrierDismissible: false);
+      await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(userId)
+          .update({'isBlocked': isBlocked});
       closeDialog();
-      Get.snackbar('Success', 'User deleted successfully');
+      Get.snackbar(
+          'Success',
+          isBlocked == true
+              ? 'User blocked successfully'
+              : 'User unblocked successfully');
+      fetchAllUsers();
     } catch (e) {
       closeDialog();
-      Get.snackbar('Error', 'Failed to delete user: $e');
+      Get.snackbar('Error', 'Failed to perform operation: $e');
     }
   }
 
+  Future<void> downloadEmailList() async {
+    var excel = Excel.createExcel();
+    Sheet sheet = excel['Sheet1'];
+    sheet.appendRow([TextCellValue('Email')]);
+    for (var user in users) {
+      sheet.appendRow([TextCellValue(user.email ?? "")]);
+    }
+    final bytes = excel.encode();
+    final blob = html.Blob([bytes],
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    final url = html.Url.createObjectUrlFromBlob(blob);
+    final anchor = html.AnchorElement(href: url)
+      ..setAttribute('download', 'user_emails.xlsx')
+      ..click();
+    html.Url.revokeObjectUrl(url);
 
- Future<void> downloadEmailList() async {
-  var excel = Excel.createExcel();
-  Sheet sheet = excel['Sheet1'];
-  sheet.appendRow([TextCellValue('Email')]);
-  for (var user in users) {
-    sheet.appendRow([TextCellValue(user.email??"")]);
+    Get.snackbar('Success', 'Email list downloaded to your device.');
   }
-  final bytes = excel.encode();
-  final blob = html.Blob([bytes], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  final url = html.Url.createObjectUrlFromBlob(blob);
-  final anchor = html.AnchorElement(href: url)
-    ..setAttribute('download', 'user_emails.xlsx')
-    ..click();
-  html.Url.revokeObjectUrl(url);
-
-  Get.snackbar('Success', 'Email list downloaded to your device.');
-}
 }

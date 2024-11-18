@@ -5,6 +5,7 @@ class UserModel {
   final String? email;
   final String? name;
   final String? nickname;
+  final bool? isBlocked;
   final String? phone;
   final String? profileImageUrl;
 
@@ -13,6 +14,7 @@ class UserModel {
      this.email,
      this.name,
      this.nickname,
+     this.isBlocked,
      this.phone,
     this.profileImageUrl,
   });
@@ -24,6 +26,7 @@ class UserModel {
       'email': email,
       'name': name,
       'nickname': nickname,
+      'isBlocked': isBlocked,
       'phone': phone,
       'profileImageUrl': profileImageUrl,
     };
@@ -36,6 +39,7 @@ class UserModel {
       email: map['email'],
       name: map['name'],
       nickname: map['nickname'],
+      isBlocked: map['isBlocked'],
       phone: map['phone'],
       profileImageUrl: map['profileImageUrl'],
     );
