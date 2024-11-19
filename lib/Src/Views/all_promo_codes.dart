@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart'; // For date formatting
@@ -92,7 +93,8 @@ class AllPromoCodes extends StatelessWidget {
                                   }).toList();
 
                                   return Container(
-                                    decoration: BoxDecoration(border: Border.all()),
+                                    decoration:
+                                        BoxDecoration(border: Border.all()),
                                     child: Column(
                                       children: users.map((user) {
                                         return ListTile(
@@ -105,13 +107,16 @@ class AllPromoCodes extends StatelessWidget {
                                                 ? NetworkImage(user
                                                     .profileImageUrl!) // Assuming profile picture is a URL
                                                 : null,
-                                            child: user.profileImageUrl == null ||
-                                                    user.profileImageUrl!.isEmpty
+                                            child: user.profileImageUrl ==
+                                                        null ||
+                                                    user.profileImageUrl!
+                                                        .isEmpty
                                                 ? Text(
                                                     user.name != null &&
-                                                            user.name!.isNotEmpty
+                                                            user.name!
+                                                                .isNotEmpty
                                                         ? user.name![0]
-                                                            .toUpperCase() 
+                                                            .toUpperCase()
                                                         : 'U',
                                                     style: const TextStyle(
                                                         fontSize: 20,
@@ -122,8 +127,8 @@ class AllPromoCodes extends StatelessWidget {
                                           ),
                                           title:
                                               Text(user.name ?? 'Unknown User'),
-                                          subtitle: Text(
-                                              user.email ?? 'No email available'),
+                                          subtitle: Text(user.email ??
+                                              'No email available'),
                                         );
                                       }).toList(),
                                     ),
@@ -213,22 +218,37 @@ class AllPromoCodes extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Colors.white,
           title: const Text('Create Promo Code'),
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                DropdownButtonFormField<Restaurant>(
-                  value: controller.selectedRestaurant.value,
-                  hint: const Text('Select Restaurant'),
-                  decoration:
-                      const InputDecoration(border: OutlineInputBorder()),
-                  items: controller.restaurants.map((restaurant) {
-                    return DropdownMenuItem<Restaurant>(
-                      value: restaurant,
-                      child: Text(restaurant.name),
-                    );
-                  }).toList(),
+                DropdownSearch<Restaurant>(
+                
+                  selectedItem: controller.selectedRestaurant.value,
+                  popupProps: const PopupProps.dialog(
+                    
+                    showSearchBox: true,
+                    searchFieldProps: const TextFieldProps(
+                      decoration: InputDecoration(
+                        hintText: "Search Restaurant",
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    title: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('Select a Restaurant'),
+                    ),
+                  ),
+                  dropdownDecoratorProps: const DropDownDecoratorProps(
+                    dropdownSearchDecoration: InputDecoration(
+                      labelText: "Select Restaurant",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  items: controller.restaurants.value,
+                  itemAsString: (restaurant) => restaurant.name,
                   onChanged: (restaurant) {
                     controller.selectedRestaurant.value = restaurant;
                   },
