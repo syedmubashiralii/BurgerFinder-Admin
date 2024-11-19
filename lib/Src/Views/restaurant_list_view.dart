@@ -1,15 +1,11 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:get/get.dart';
 import 'package:restaurant_user_admin/Src/Controllers/home_controller.dart';
 import 'package:restaurant_user_admin/Src/Dialogs/restaurant_delete_dialog.dart';
 import 'package:restaurant_user_admin/Src/Models/restaurant_model.dart';
 import 'package:restaurant_user_admin/Src/Models/review_model.dart';
 import 'package:restaurant_user_admin/Src/Views/add_restaurant_view.dart';
-import 'package:restaurant_user_admin/Src/Views/notification_template.dart';
-import 'package:restaurant_user_admin/Src/Views/users_list_screen.dart';
 import 'package:restaurant_user_admin/Src/Widgets/restaurant_image_slider.dart';
 
 class RestaurantsListScreen extends GetView<HomeController> {
@@ -31,53 +27,59 @@ class RestaurantsListScreen extends GetView<HomeController> {
       ),
       body: Padding(
         padding: const EdgeInsets.only(bottom: 60),
-        child: Obx(
-          () => controller.restaurants.isEmpty
-              ? const Center(
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: () async {
-                    await controller.fetchRestaurants();
-                    Get.snackbar("Refreshed", "Restaurant list updated!",
-                        snackPosition: SnackPosition.BOTTOM,
-                        backgroundColor: Colors.teal,
-                        colorText: Colors.white);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        if (!kIsWeb)
-                          const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "Pull Down to Refresh ",
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              Icon(
-                                Icons.arrow_downward,
-                                color: Colors.white,
-                              ),
-                            ],
-                          ),
-                        const SizedBox(height: 20),
-                        Expanded(
-                          child: ListView.builder(
-                            itemCount: controller.restaurants.length,
-                            itemBuilder: (context, index) {
-                              final restaurant = controller.restaurants[index];
-                              return RestaurantTile(restaurant: restaurant);
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
+        child: Column(
+          children: [
+            // Search Bar
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                onChanged: (query) {
+                  controller.searchRestaurants(query);
+                },
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.teal.shade700,
+                  hintText: 'Search Restaurants...',
+                  hintStyle: const TextStyle(color: Colors.white70),
+                  prefixIcon: const Icon(Icons.search, color: Colors.white),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
                   ),
                 ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: Obx(
+                () => controller.filteredRestaurants.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'No restaurants found.',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: () async {
+                          await controller.fetchRestaurants();
+                          Get.snackbar("Refreshed", "Restaurant list updated!",
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.teal,
+                              colorText: Colors.white);
+                        },
+                        child: ListView.builder(
+                          itemCount: controller.filteredRestaurants.length,
+                          itemBuilder: (context, index) {
+                            final restaurant =
+                                controller.filteredRestaurants[index];
+                            return RestaurantTile(restaurant: restaurant);
+                          },
+                        ),
+                      ),
+              ),
+            ),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -92,6 +94,7 @@ class RestaurantsListScreen extends GetView<HomeController> {
     );
   }
 }
+
 
 class RestaurantTile extends StatefulWidget {
   final Restaurant restaurant;

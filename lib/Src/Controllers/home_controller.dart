@@ -17,7 +17,8 @@ import 'package:restaurant_user_admin/Src/Models/user_model.dart';
 import 'package:restaurant_user_admin/Src/Utils/helper_functions.dart';
 
 class HomeController extends GetxController {
-  RxList<Restaurant> restaurants = <Restaurant>[].obs;
+  var restaurants = <Restaurant>[].obs;
+  var filteredRestaurants = <Restaurant>[].obs;
   RxList<String> imagePaths = <String>[].obs;
   RxList<String> imageUrls = <String>[].obs;
   var restaurantKey = GlobalKey<FormState>();
@@ -37,7 +38,23 @@ class HomeController extends GetxController {
     super.onInit();
   }
 
-  Future fetchRestaurants() async {
+  Future<void> fetchRestaurants() async {
+    await getRestaurants();
+    filteredRestaurants.value = restaurants;
+  }
+
+  void searchRestaurants(String query) {
+    if (query.isEmpty) {
+      filteredRestaurants.value = restaurants;
+    } else {
+      filteredRestaurants.value = restaurants
+          .where((restaurant) =>
+              restaurant.name.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    }
+  }
+
+  Future getRestaurants() async {
     try {
       final snapshot =
           await FirebaseFirestore.instance.collection('Restaurants').get();
