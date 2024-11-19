@@ -40,13 +40,14 @@ class PromoCodeController extends GetxController {
     }
   }
 
-    Future<void> fetchRedeemedUsers(List<String> userIds) async {
+  Future<void> fetchRedeemedUsers(List<String> userIds) async {
     var usersQuery = await FirebaseFirestore.instance
         .collection('Users')
         .where('uid', whereIn: userIds)
         .get();
 
-    redeemedUsers.value = usersQuery.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    redeemedUsers.value =
+        usersQuery.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
   }
 
   void filterPromoCodes() {
@@ -61,32 +62,45 @@ class PromoCodeController extends GetxController {
 
   // Create a new promo code
   Future<void> createPromoCode(String code, String codeDescription,
-      String restaurantId,DateTime expiryDate,String readAbleDate) async {
+      String restaurantId, DateTime expiryDate, String readAbleDate) async {
     try {
-      Get.dialog(LoadingDialog(),barrierDismissible: false);
+      Get.dialog(LoadingDialog(), barrierDismissible: false);
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('PromoCodes')
+          .where('code', isEqualTo: code)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        closeDialog();
+        Get.snackbar(
+            "Error", "Promo code already exists. Please enter a new code.");
+        return;
+      }
+
       await FirebaseFirestore.instance.collection('PromoCodes').add({
         'code': code,
         'restaurantId': restaurantId,
         'expiryDate': Timestamp.fromDate(expiryDate),
         'isActive': true,
         'description': codeDescription,
-        'users':[]
+        'users': []
       });
 
       final restaurant = restaurants.firstWhere(
-                        (restaurant) => restaurant.id == restaurantId,
-                        orElse: () => Restaurant(
-                            id: '',
-                            name: "Unknown",
-                            description: '',
-                            images: [],
-                            location: '',
-                            profilePicture: '',
-                            ratings: '',
-                            reviews: []),
-                      );
-      
-      NotificationService().broadcastNotificationToAllUsersNew(code,"${codeDescription}\n Applicable At: ${restaurant.name} \n Expiry Date: ${readAbleDate}");
+        (restaurant) => restaurant.id == restaurantId,
+        orElse: () => Restaurant(
+            id: '',
+            name: "Unknown",
+            description: '',
+            images: [],
+            location: '',
+            profilePicture: '',
+            ratings: '',
+            reviews: []),
+      );
+
+      NotificationService().broadcastNotificationToAllUsersNew(code,
+          "${codeDescription}\n Applicable At: ${restaurant.name} \n Expiry Date: ${readAbleDate}");
       fetchPromoCodes();
       closeDialog();
       Get.snackbar("Success", "Promo Code Created");
