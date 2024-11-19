@@ -3,6 +3,8 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart'; // For date formatting
+import 'package:restaurant_user_admin/Src/Dialogs/delete_promo_code_dialog.dart';
+import 'package:restaurant_user_admin/Src/Dialogs/view_redmeed_users_dialog.dart';
 import 'package:restaurant_user_admin/Src/Models/restaurant_model.dart';
 import 'package:restaurant_user_admin/Src/Models/user_model.dart';
 import 'package:restaurant_user_admin/Src/Utils/extensions.dart';
@@ -66,75 +68,33 @@ class AllPromoCodes extends StatelessWidget {
                                     fontSize: 20,
                                     fontWeight: FontWeight.w500),
                               ),
-                            if (promo.users.isNotEmpty &&
-                                promo.users.length != 0)
-                              StreamBuilder(
-                                stream: FirebaseFirestore.instance
-                                    .collection('Users')
-                                    .where('uid', whereIn: promo.users)
-                                    .snapshots(),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return const CircularProgressIndicator();
-                                  }
-                                  if (snapshot.hasError) {
-                                    return Text('Error: ${snapshot.error}');
-                                  }
-                                  if (!snapshot.hasData ||
-                                      snapshot.data!.docs.isEmpty) {
-                                    return const Text(
-                                        'No users redeemed this code.');
-                                  }
-
-                                  final users = snapshot.data!.docs.map((doc) {
-                                    return UserModel.fromMap(
-                                        doc.data() as Map<String, dynamic>);
-                                  }).toList();
-
-                                  return Container(
-                                    decoration:
-                                        BoxDecoration(border: Border.all()),
-                                    child: Column(
-                                      children: users.map((user) {
-                                        return ListTile(
-                                          leading: CircleAvatar(
-                                            backgroundImage: user
-                                                            .profileImageUrl !=
-                                                        null &&
-                                                    user.profileImageUrl!
-                                                        .isNotEmpty
-                                                ? NetworkImage(user
-                                                    .profileImageUrl!) // Assuming profile picture is a URL
-                                                : null,
-                                            child: user.profileImageUrl ==
-                                                        null ||
-                                                    user.profileImageUrl!
-                                                        .isEmpty
-                                                ? Text(
-                                                    user.name != null &&
-                                                            user.name!
-                                                                .isNotEmpty
-                                                        ? user.name![0]
-                                                            .toUpperCase()
-                                                        : 'U',
-                                                    style: const TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  )
-                                                : null,
-                                          ),
-                                          title:
-                                              Text(user.name ?? 'Unknown User'),
-                                          subtitle: Text(user.email ??
-                                              'No email available'),
-                                        );
-                                      }).toList(),
-                                    ),
-                                  );
-                                },
-                              ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () {
+                                    confirmDeletePromo(context, promo.id);
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.redAccent,
+                                      foregroundColor: Colors.white),
+                                  child: const Text('Delete Code'),
+                                ),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    showRedemeedUsersDialog(
+                                        context, promo.users);
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.teal,
+                                      foregroundColor: Colors.white),
+                                  child: const Text('View'),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       );
@@ -164,6 +124,33 @@ class AllPromoCodes extends StatelessWidget {
                           children: [
                             Text(
                                 'Expired on: ${formatDate(promo.expiryDate)}\nRestaurant: ${restaurant.name}'),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () {
+                                    confirmDeletePromo(context, promo.id);
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.redAccent,
+                                      foregroundColor: Colors.white),
+                                  child: const Text('Delete Code'),
+                                ),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    showRedemeedUsersDialog(
+                                        context, promo.users);
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.teal,
+                                      foregroundColor: Colors.white),
+                                  child: const Text('View'),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       );
@@ -225,10 +212,8 @@ class AllPromoCodes extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 DropdownSearch<Restaurant>(
-                
                   selectedItem: controller.selectedRestaurant.value,
                   popupProps: const PopupProps.dialog(
-                    
                     showSearchBox: true,
                     searchFieldProps: const TextFieldProps(
                       decoration: InputDecoration(

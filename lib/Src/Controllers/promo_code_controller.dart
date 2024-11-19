@@ -60,11 +60,31 @@ class PromoCodeController extends GetxController {
         .toList();
   }
 
+  Future<void> deletePromoCode(String promoId) async {
+    try {
+      Get.dialog(LoadingDialog());
+      await FirebaseFirestore.instance
+          .collection('PromoCodes')
+          .doc(promoId)
+          .delete();
+      closeDialog();
+      fetchPromoCodes();
+      Get.snackbar('Success', 'Promo Code deleted successfully');
+    } catch (e) {
+      closeDialog();
+      Get.snackbar('Error', 'Failed to delete promo code: $e');
+      print('Error deleting promo code: $e');
+    }
+  }
+
   // Create a new promo code
   Future<void> createPromoCode(String code, String codeDescription,
       String restaurantId, DateTime expiryDate, String readAbleDate) async {
     try {
+      // Show loading dialog
       Get.dialog(LoadingDialog(), barrierDismissible: false);
+
+      // Check if promo code already exists
       final querySnapshot = await FirebaseFirestore.instance
           .collection('PromoCodes')
           .where('code', isEqualTo: code)
@@ -77,15 +97,22 @@ class PromoCodeController extends GetxController {
         return;
       }
 
-      await FirebaseFirestore.instance.collection('PromoCodes').add({
+      // Add promo code to Firestore and get the document reference
+      final docRef =
+          await FirebaseFirestore.instance.collection('PromoCodes').add({
         'code': code,
         'restaurantId': restaurantId,
         'expiryDate': Timestamp.fromDate(expiryDate),
         'isActive': true,
         'description': codeDescription,
-        'users': []
+        'users': [],
+        'createdAt': Timestamp.now(),
       });
 
+      // Update the document with its own ID
+      await docRef.update({'id': docRef.id});
+
+      // Fetch the associated restaurant
       final restaurant = restaurants.firstWhere(
         (restaurant) => restaurant.id == restaurantId,
         orElse: () => Restaurant(
@@ -99,9 +126,16 @@ class PromoCodeController extends GetxController {
             reviews: []),
       );
 
-      NotificationService().broadcastNotificationToAllUsersNew(code,
-          "${codeDescription}\n Applicable At: ${restaurant.name} \n Expiry Date: ${readAbleDate}");
+      // Send notification to all users
+      NotificationService().broadcastNotificationToAllUsersNew(
+        code,
+        "${codeDescription}\n Applicable At: ${restaurant.name} \n Expiry Date: ${readAbleDate}",
+      );
+
+      // Refresh promo codes list
       fetchPromoCodes();
+
+      // Close loading dialog and show success message
       closeDialog();
       Get.snackbar("Success", "Promo Code Created");
     } catch (e) {
