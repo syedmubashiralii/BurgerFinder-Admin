@@ -59,15 +59,7 @@ class AllPromoCodes extends StatelessWidget {
                           children: [
                             Text(
                                 'Expires: ${formatDate(promo.expiryDate)}\nRestaurant: ${restaurant.name}'),
-                            if (promo.users.isNotEmpty &&
-                                promo.users.length != 0)
-                              const Text(
-                                "Redemeed By",
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w500),
-                              ),
+                          
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -190,7 +182,7 @@ class AllPromoCodes extends StatelessWidget {
       final DateTime? picked = await showDatePicker(
         context: context,
         initialDate: DateTime.now(),
-        firstDate: DateTime(2020),
+        firstDate: DateTime.now(),
         lastDate: DateTime(2101),
       );
       if (picked != null && picked != selectedDate) {
@@ -290,7 +282,7 @@ class AllPromoCodes extends StatelessWidget {
                   final selectedRestaurantId =
                       controller.selectedRestaurant.value?.id ?? '';
                   if (selectedRestaurantId.isNotEmpty) {
-                    Navigator.of(context).pop();
+                    
                     controller.createPromoCode(
                         code,
                         codeDescription,

@@ -136,7 +136,9 @@ class PromoCodeController extends GetxController {
       fetchPromoCodes();
 
       // Close loading dialog and show success message
+     
       closeDialog();
+       Get.back();
       Get.snackbar("Success", "Promo Code Created");
     } catch (e) {
       closeDialog();
