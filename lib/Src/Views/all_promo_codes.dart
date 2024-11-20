@@ -59,7 +59,6 @@ class AllPromoCodes extends StatelessWidget {
                           children: [
                             Text(
                                 'Expires: ${formatDate(promo.expiryDate)}\nRestaurant: ${restaurant.name}'),
-                          
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -281,11 +280,13 @@ class AllPromoCodes extends StatelessWidget {
                     expiryDate != null) {
                   final selectedRestaurantId =
                       controller.selectedRestaurant.value?.id ?? '';
+                  final selectedRestaurantName =
+                      controller.selectedRestaurant.value?.name ?? '';
                   if (selectedRestaurantId.isNotEmpty) {
-                    
                     controller.createPromoCode(
                         code,
                         codeDescription,
+                        selectedRestaurantName,
                         selectedRestaurantId,
                         expiryDate,
                         DateFormat('MM/dd/yyyy').format(expiryDate));

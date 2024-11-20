@@ -4,6 +4,7 @@ class PromoCode {
   final String id; 
   final String code;
   final String restaurantId;
+  final String restaurantName;
   final DateTime expiryDate;
   final bool isActive;
   final List<String> users;
@@ -13,6 +14,7 @@ class PromoCode {
     required this.id,
     required this.code,
     required this.restaurantId,
+    required this.restaurantName,
     required this.expiryDate,
     required this.isActive,
     required this.users,
@@ -25,6 +27,7 @@ class PromoCode {
       id: map['id'], // Assign document ID
       code: map['code'] ?? '',
       restaurantId: map['restaurantId'] ?? '',
+      restaurantName: map['restaurantName'] ?? '',
       expiryDate: (map['expiryDate'] as Timestamp).toDate(),
       isActive: map['isActive'] ?? false,
       users: List<String>.from(map['users'] ?? []),
@@ -37,6 +40,7 @@ class PromoCode {
       'id': id,
       'code': code,
       'restaurantId': restaurantId,
+      'restaurantName': restaurantName,
       'expiryDate': expiryDate,
       'isActive': isActive,
       'users': users,

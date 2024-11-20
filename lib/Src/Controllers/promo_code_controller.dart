@@ -78,7 +78,7 @@ class PromoCodeController extends GetxController {
   }
 
   // Create a new promo code
-  Future<void> createPromoCode(String code, String codeDescription,
+  Future<void> createPromoCode(String code, String codeDescription,String restaurantName,
       String restaurantId, DateTime expiryDate, String readAbleDate) async {
     try {
       // Show loading dialog
@@ -102,6 +102,7 @@ class PromoCodeController extends GetxController {
           await FirebaseFirestore.instance.collection('PromoCodes').add({
         'code': code,
         'restaurantId': restaurantId,
+        'restaurantName': restaurantName,
         'expiryDate': Timestamp.fromDate(expiryDate),
         'isActive': true,
         'description': codeDescription,
